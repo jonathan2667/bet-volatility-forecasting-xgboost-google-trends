@@ -1,0 +1,637 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{setspace}
+\onehalfspacing
+
+\title{\textbf{Behavioral Search Activity as a Leading Indicator of Equity-Index Volatility in Emerging Markets (Romania): \\
+A Machine Learning Approach with Google Trends Data\\
+\large Lab 1, Lab 2, Lab 3 \& Lab 4 - Complete Research Project}}
+
+\author{Jonathan Mogovan\\
+\textit{RESEARCH Course}\\
+2025}
+
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This research project investigates the predictive power of Google Trends search data for forecasting volatility in the Romanian stock market (BET index) using machine learning techniques, with emphasis on XGBoost and ensemble methods. Following a comprehensive literature review of fifteen key studies, we establish a methodological framework that combines behavioral finance indicators with advanced ML architectures to predict market turbulence in emerging markets. This document fulfills Lab 1, Lab 2, Lab 3, and Lab 4 requirements, presenting: (1) research topic classification, (2) detailed analysis of relevant scientific literature, (3) proposed thesis structure, (4) extended bibliography of 15 sources, (5) research methodology with hypothesis testing framework, and (6) identification of original contributions to computational finance in emerging markets.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction - Lab 1 Overview}
+
+\subsection{Research Topic}
+This study examines \textit{behavioral search activity as a leading indicator of equity-index volatility in an emerging market (Romania)}. Specifically, we assess the incremental and economic value of Google Trends-augmented machine learning forecasts of BET (Bucharest Exchange Trading) volatility versus econometric baselines.
+
+\subsection{Research Questions}
+\begin{enumerate}
+    \item \textbf{Predictive content:} Do Romanian-language Google Trends signals add out-of-sample predictive power for next-day/next-week BET volatility beyond lagged volatility and market/macro controls?
+    \item \textbf{Early-warning of spikes:} Do search volumes lead volatility spikes (tail events) rather than just average volatility?
+    \item \textbf{Robustness \& regimes:} Are effects robust to query sets, misspellings/synonyms, and market regimes (calm vs. stress)?
+    \item \textbf{Economic significance:} Do better forecasts translate into risk-management gains (e.g., fewer VaR breaches, better hedge P\&L)?
+\end{enumerate}
+
+\subsection{Classification}
+
+\subsubsection{MSC 2020 (Mathematics Subject Classification)}
+\begin{itemize}
+    \item \textbf{Primary:} 91G15 — Financial markets
+    \item \textbf{Secondary:}
+    \begin{itemize}
+        \item 62M10 — Time series analysis (incl. GARCH)
+        \item 91G70 — Statistical methods; risk measures
+        \item 62P20 — Applications of statistics to economics
+        \item 68T05 — Learning and adaptive systems (machine learning)
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{ACM CCS (2012)}
+\begin{itemize}
+    \item \textbf{Primary concepts for the method:}
+    \begin{itemize}
+        \item Computing methodologies $\rightarrow$ Machine learning $\rightarrow$ Learning Paradigms $\rightarrow$ Supervised learning
+        \item Computing methodologies $\rightarrow$ Machine learning $\rightarrow$ Learning settings $\rightarrow$ Online learning settings
+        \item Computing methodologies $\rightarrow$ Machine learning algorithms $\rightarrow$ Ensemble methods (bagging/boosting)
+    \end{itemize}
+    \item \textbf{Application context:}
+    \begin{itemize}
+        \item Applied computing $\rightarrow$ Law, social and behavioral sciences $\rightarrow$ Economics
+        \item Information systems $\rightarrow$ Information systems applications $\rightarrow$ Decision support systems $\rightarrow$ Data analytics
+    \end{itemize}
+\end{itemize}
+
+\section{Lab 2 - Literature Review}
+
+This section presents a detailed analysis of five scientific articles directly relevant to our research on Google Trends-augmented machine learning for financial market volatility prediction.
+
+\subsection{Article 1: Google Trends–Augmented XGBoost for Market Volatility Prediction}
+
+\subsubsection{Relevance}
+This article is highly relevant as it directly addresses the integration of Google Trends data with XGBoost for VIX spike prediction, providing a methodological framework applicable to Romanian BET volatility forecasting. The study demonstrates that behavioral search signals contain economically significant predictive information, outperforming traditional econometric models by establishing XGBoost as a superior ensemble method for volatility prediction tasks.
+
+\subsubsection{Article Structure}
+\begin{enumerate}
+    \item \textbf{Introduction} - Motivates the need for enhanced volatility prediction methods beyond traditional GARCH models, establishes the role of behavioral indicators
+    \item \textbf{Literature Review and Theoretical Framework}
+    \begin{itemize}
+        \item 2.1 Traditional Volatility Forecasting - Reviews GARCH, EGARCH, HAR models
+        \item 2.2 Behavioral Finance and Investor Attention - Establishes Google Trends as proxy for investor sentiment
+        \item 2.3 Machine Learning in Financial Prediction - Discusses XGBoost and ensemble methods
+        \item 2.4 Media Sentiment and Behavioral Signals - Covers textual analysis approaches
+        \item 2.5 Safe-Haven Assets and Economic Validation - Gold as validation mechanism
+        \item 2.6 Meta-Models and Multi-Signal Frameworks - Multi-model prediction approaches
+        \item 2.7 Synthesis and Theoretical Framework - Integrates five key principles
+    \end{itemize}
+    \item \textbf{Data and Methodology}
+    \begin{itemize}
+        \item 3.1 Data Construction - VIX, Google Trends, gold futures (2004-2024)
+        \item 3.2 Feature Engineering Framework - Behavioral signal construction (ROC, ACC measures)
+        \item 3.3 Target Variable Definition - Binary VIX spike classification
+        \item 3.4 Machine Learning Methodology - XGBoost hyperparameter optimization
+        \item 3.5 Benchmark Evaluation Framework - 8 competing models (GARCH, EGARCH, GJR-GARCH, Heston SV, HAR-RV, etc.)
+    \end{itemize}
+    \item \textbf{Results}
+    \begin{itemize}
+        \item 4.1 Descriptive Analysis - 256 monthly observations, 81 VIX spikes
+        \item 4.2 Behavioral Sentiment Correlations - Financial crisis searches lead by 1 month (correlation: 0.638)
+        \item 4.3 GT-XGBoost Model Performance - ROC AUC 0.796, precision 65.4\%, recall 58.6\%
+        \item 4.4 Academic Benchmark Comparison - Outperforms all 8 baselines
+    \end{itemize}
+    \item \textbf{Discussion} - Establishes economic significance through gold safe-haven analysis (3.32\% returns)
+    \item \textbf{Conclusion} - GT-XGBoost ranks first among benchmarks with +0.008 AUC improvement
+\end{enumerate}
+
+\subsubsection{Bibliographic References}
+The article contains 31 references in APA format, including seminal works in behavioral finance (Kahneman \& Tversky), machine learning (Chen \& Guestrin on XGBoost), and volatility modeling (Bollerslev, Hansen \& Lunde). Citations are integrated using author-year format (e.g., "Barber and Odean [3]" with numerical indexing). The bibliography includes journal articles, conference proceedings, and technical reports from 1963-2025.
+
+\subsection{Article 2: Employing Google Trends and Deep Learning in Forecasting Financial Market Turbulence}
+
+\subsubsection{Relevance}
+This study is critical for our research as it develops a financial dictionary from central bank speeches and applies deep learning techniques (LSTM, TCN) to forecast market turbulence using Google Trends indices. The methodology of constructing domain-specific search terms through text mining and comparing multiple ML algorithms provides a template for Romanian financial terminology extraction and BET volatility modeling.
+
+\subsubsection{Article Structure}
+\begin{enumerate}
+    \item \textbf{Abstract} - Summarizes text mining approach for financial dictionary construction from 10,000 Central Bank speeches
+    \item \textbf{Introduction} - Establishes Google Trends as responsive data source vs. lagged official indicators
+    \item \textbf{Literature Review} - Covers applications of Google Trends in unemployment, stock markets, and macro forecasting
+    \item \textbf{Data and Methods}
+    \begin{itemize}
+        \item Financial dictionary construction using topic modeling and tf-idf analysis
+        \item Google Trends data collection methodology
+        \item Deep Learning architectures: LSTM, TCN
+        \item Benchmark models: ARIMA, Prophet, XGBoost
+        \item Feature selection using Boruta algorithm
+    \end{itemize}
+    \item \textbf{Results}
+    \begin{itemize}
+        \item TCN and LSTM produce stable forecasts at daily granularity
+        \item Deep learning models outperform statistical baselines
+        \item Model performance comparison using accuracy and AUC metrics
+    \end{itemize}
+    \item \textbf{Conclusion} - Demonstrates value of OSINT data and ensemble forecasting for conflict modeling (applicable to financial crises)
+\end{enumerate}
+
+\subsubsection{Bibliographic References}
+The article cites works on Google Trends applications (Taylor \& Letham on Prophet, 2018), deep learning architectures (Bai et al. on TCN, 2018), and conflict prediction literature (Hegre \& Sambanis, 2006). References follow a hybrid format with author-year in text and numbered bibliography. Approximately 25-30 citations spanning methodology papers, empirical applications, and theoretical frameworks.
+
+\subsection{Article 3: Restoring the Forecasting Power of Google Trends with Statistical Preprocessing}
+
+\subsubsection{Relevance}
+This article addresses critical data quality issues in Google Trends that directly impact our Romanian BET study: missing values due to privacy thresholds, sampling variability, and noise. The proposed preprocessing methodology using hierarchical clustering, smoothing splines, and detrending is essential for improving ML model performance on sparse emerging market data where Romanian-language searches may have lower volumes than U.S. queries.
+
+\subsubsection{Article Structure}
+\begin{enumerate}
+    \item \textbf{Introduction}
+    \begin{itemize}
+        \item Establishes Google Trends as valuable but problematic data source
+        \item 1.1 Related Work - Reviews existing preprocessing approaches
+        \item 1.2 Our contributions - Comprehensive statistical methodology
+    \end{itemize}
+    \item \textbf{Data}
+    \begin{itemize}
+        \item 2.1 Description of Google Trends - Functionality and search types
+        \item 2.2 Challenges of Google Trends Data - Missing values, noise, trends, sampling variability
+        \item 2.3 Identifying Flu-related Terms - Methodology applicable to financial terms
+        \item 2.4 Influenza Hospitalizations from CDC - Validation data
+    \end{itemize}
+    \item \textbf{Methods}
+    \begin{itemize}
+        \item 3.1 Missing Values and Sampling Variability - Hierarchical clustering with correlation distance
+        \item 3.2 Noise - Iterative smoothing splines with rolling windows
+        \item 3.3 Trend - ADF test, linear/quadratic detrending, differencing
+    \end{itemize}
+    \item \textbf{Results}
+    \begin{itemize}
+        \item Modularized evaluation of clustering, denoising, detrending
+        \item 4.1 Evaluation of Clustering - Reduces zeros from 96\% to 40\%
+        \item 4.2 Evaluation of Denoising - Improves SNR across downloads
+        \item 4.3 Evaluation of Detrending - Successfully removes deterministic trends (R² drops from 0.85 to 0.01)
+    \end{itemize}
+    \item \textbf{Application to Influenza Prediction}
+    \begin{itemize}
+        \item 5.1 ARIMAX as Predictive Model
+        \item 5.2 Results - Preprocessing improves accuracy by 58\% nationally, 24\% at state level; raw data degrades performance by 54\%
+    \end{itemize}
+    \item \textbf{Discussion and Conclusion} - Validates preprocessing methodology, discusses limitations and future research
+\end{enumerate}
+
+\subsubsection{Bibliographic References}
+Contains approximately 50 references in author-year format (e.g., "Yang et al. 2015", "Cebrián \& Domenech 2023"). Bibliography includes recent methodological papers on Google Trends data quality (2022-2024), time series analysis textbooks (Shumway et al. 2006, Brockwell \& Davis 2016), and influenza forecasting studies. APA-style formatting with DOIs for journal articles.
+
+\subsection{Article 4: The Effect of Data Types on the Performance of Machine Learning Algorithms for Financial Prediction}
+
+\subsubsection{Relevance}
+This cryptocurrency study is valuable for comparing continuous vs. trend (binarized) data representations in financial ML models, directly applicable to our BET volatility research. The comprehensive methodology testing RF, KNN, XGBoost, SVM, NB, ANN, and LSTM on both data types provides insights into which architectures perform best for binary volatility spike classification versus continuous volatility forecasting in emerging markets.
+
+\subsubsection{Article Structure}
+\begin{enumerate}
+    \item \textbf{Introduction} - Motivates Bitcoin price movement prediction, discusses cryptocurrency market growth
+    \item \textbf{Related Works} - Reviews statistical methods and ML approaches for financial time series
+    \begin{itemize}
+        \item Chronological review from Shah \& Zhang (2014) to Goutte et al. (2023)
+        \item Covers ARIMA, SVM, RF, LSTM applications to Bitcoin
+    \end{itemize}
+    \item \textbf{Data Preparation}
+    \begin{itemize}
+        \item 3.1 Continuous Data Preparation - 17 technical indicators + Google Trends + Tweets
+        \item 3.2 Trend Data Preparation - Discretization procedure (Table 3)
+        \item 3.2.1 Verification Method Analyzes - Train-test split vs. cross-validation
+        \item 3.3 Problem and Methodology - Formalization as classification problem
+        \item 3.3.1-3.3.7 Parameter specifications for RF, KNN, XGBoost, SVM, NB, ANN, LSTM
+    \end{itemize}
+    \item \textbf{Evaluation Criteria} - Accuracy, F-stat, AUC, paired t-tests
+    \item \textbf{Results}
+    \begin{itemize}
+        \item 5.1 Continuous Datasets - ANN achieves 0.804 accuracy (complete data), SVM 0.794
+        \item 5.2 Trend Datasets - LSTM achieves 0.959 accuracy, trend data improves all models
+        \item 5.3 Model Comparison for Training and Testing - Elapsed time analysis
+    \end{itemize}
+    \item \textbf{Conclusions and Discussion} - ANN and LSTM best for price movement, trend data enhances performance
+    \item \textbf{Appendix} - Separation visualizations by data type
+\end{enumerate}
+
+\subsubsection{Bibliographic References}
+Contains 30+ references in author-year format with full citations at the end. Bibliography includes foundational ML papers (Breiman 2001 on RF, Cortes \& Vapnik 1995 on SVM), Bitcoin-specific studies (Madan et al. 2015, Chen et al. 2020-2021), and technical documentation. References span 1986-2024, with heavy emphasis on 2019-2023 cryptocurrency literature. Uses standard academic journal format with volume, issue, and page numbers.
+
+\subsection{Article 5: Forecasting Volatility with Empirical Similarity and Google Trends}
+
+\subsubsection{Relevance}
+This article from the \textit{Journal of Economic Behavior \& Organization} (cited in the Google Trends preprocessing paper) establishes theoretical foundations for using Google Trends in volatility forecasting through empirical similarity models. The integration of search behavior with traditional volatility measures provides a conceptual framework for our Romanian BET study, particularly for understanding how behavioral indicators complement econometric baselines during different market regimes.
+
+\subsubsection{Article Structure}
+Based on citations and methodology discussions in other papers, this article likely contains:
+\begin{enumerate}
+    \item \textbf{Introduction} - Motivates need for alternative volatility indicators beyond historical prices
+    \item \textbf{Theoretical Framework}
+    \begin{itemize}
+        \item Empirical similarity concept for time series matching
+        \item Google Trends as forward-looking volatility proxy
+        \item Integration with GARCH family models
+    \end{itemize}
+    \item \textbf{Methodology}
+    \begin{itemize}
+        \item Construction of Google Trends indices for market uncertainty
+        \item Empirical similarity algorithm for pattern matching
+        \item Hybrid forecasting framework combining search data with econometric models
+    \end{itemize}
+    \item \textbf{Empirical Results}
+    \begin{itemize}
+        \item Out-of-sample forecasting performance during high-volatility phases
+        \item Comparison with GARCH, EGARCH benchmarks
+        \item Regime-dependent analysis (calm vs. stress periods)
+    \end{itemize}
+    \item \textbf{Discussion} - Economic interpretation of search behavior as uncertainty measure
+    \item \textbf{Conclusion} - Establishes value of Google Trends for volatility prediction
+\end{enumerate}
+
+\subsubsection{Bibliographic References}
+Following \textit{Journal of Economic Behavior \& Organization} style, references likely use author-year format with hanging indent bibliography. Typical articles in this journal cite 40-60 works spanning behavioral economics (Kahneman, Tversky), financial econometrics (Engle, Bollerslev), and recent empirical applications. Citations include both theoretical foundations and methodological innovations in volatility forecasting.
+
+\newpage
+\section{Lab 3 - Proposed Thesis Structure}
+
+\subsection{Motivation for Romanian BET Volatility Research}
+
+Emerging markets like Romania present unique challenges for volatility forecasting:
+\begin{itemize}
+    \item Lower search volumes leading to sparse Google Trends data
+    \item Language-specific search patterns (Romanian vs. English terms)
+    \item Market structure differences from developed markets
+    \item Limited prior research on Central/Eastern European markets
+    \item Higher volatility and regime shifts compared to mature markets
+\end{itemize}
+
+\subsection{Detailed Table of Contents}
+
+\begin{enumerate}
+    \item \textbf{Introduction}
+    \begin{itemize}
+        \item[1.1] Research Motivation
+        \item[1.2] Research Questions
+        \item[1.3] Contribution to the Field
+        \item[1.4] Thesis Organization
+    \end{itemize}
+    
+    \item \textbf{Literature Review}
+    \begin{itemize}
+        \item[2.1] Traditional Volatility Forecasting Methods (GARCH, SV, HAR-RV)
+        \item[2.2] Behavioral Finance and Investor Attention (Google Trends applications)
+        \item[2.3] Machine Learning in Financial Prediction (XGBoost, LSTM, ensemble methods)
+        \item[2.4] Google Trends Data Quality Issues (preprocessing methodologies)
+        \item[2.5] Emerging Market Volatility Research
+        \item[2.6] Research Gap Identification
+    \end{itemize}
+    
+    \item \textbf{Theoretical Framework}
+    \begin{itemize}
+        \item[3.1] Limited Attention Hypothesis
+        \item[3.2] Behavioral Volatility Drivers
+        \item[3.3] Information Diffusion in Emerging Markets
+        \item[3.4] XGBoost Theoretical Foundation
+    \end{itemize}
+    
+    \item \textbf{Data and Methodology}
+    \begin{itemize}
+        \item[4.1] Data Collection (BET index 2010-2025, Romanian Google Trends, controls)
+        \item[4.2] Google Trends Preprocessing Pipeline (clustering, denoising, detrending)
+        \item[4.3] Feature Engineering (behavioral signals, technical indicators, sentiment indices)
+        \item[4.4] Model Specification (XGBoost, LSTM, baseline econometric models)
+        \item[4.5] Validation Framework (time series cross-validation, out-of-sample testing)
+    \end{itemize}
+    
+    \item \textbf{Empirical Results}
+    \begin{itemize}
+        \item[5.1] Descriptive Statistics
+        \item[5.2] Preprocessing Effectiveness
+        \item[5.3] XGBoost Model Performance (ROC AUC, precision, recall, SHAP values)
+        \item[5.4] Benchmark Comparisons (vs. GARCH, LSTM, Prophet)
+        \item[5.5] Regime Analysis (Calm vs. Stress Periods)
+        \item[5.6] Economic Significance (VaR breach reduction, portfolio hedging)
+    \end{itemize}
+    
+    \item \textbf{Robustness Tests}
+    \begin{itemize}
+        \item[6.1] Alternative Query Sets
+        \item[6.2] Different Volatility Horizons (1-day, 1-week, 1-month)
+        \item[6.3] Sensitivity to Hyperparameters
+        \item[6.4] Subsample Analysis
+    \end{itemize}
+    
+    \item \textbf{Discussion}
+    \begin{itemize}
+        \item[7.1] Interpretation of Results
+        \item[7.2] Comparison with U.S./European Studies
+        \item[7.3] Emerging Market Implications
+        \item[7.4] Practical Applications for Romanian Investors
+        \item[7.5] Limitations
+    \end{itemize}
+    
+    \item \textbf{Conclusion and Future Research}
+    
+    \item \textbf{References}
+    
+    \item \textbf{Appendices} (Romanian query list, hyperparameters, code repository)
+\end{enumerate}
+
+\newpage
+\section{Lab 4 - Research Plan and Contribution}
+
+\subsection{Working Hypothesis}
+
+\textbf{Main Hypothesis:} XGBoost ensemble learning with preprocessed Google Trends features can achieve superior volatility prediction accuracy compared to traditional time series models (GARCH) and deep learning approaches (LSTM) when applied to emerging market data with sparse behavioral signals.
+
+\textbf{Technical Expectations:}
+\begin{itemize}
+    \item Hierarchical clustering and smoothing preprocessing will reduce Google Trends noise by 40-50\%
+    \item XGBoost with behavioral features will achieve ROC AUC >0.75, outperforming GARCH and LSTM baselines by 5-10\%
+    \item Feature importance analysis (SHAP values) will reveal Google Trends features rank in top 15 predictors
+    \item The gradient boosting approach will handle sparse data better than neural networks (LSTM)
+\end{itemize}
+
+\subsection{Methodology: Step-by-Step Research Plan}
+
+\subsubsection{Step 1: Collect Data}
+
+\textbf{What we need:}
+\begin{itemize}
+    \item BET index daily data (2010-2024) from Bucharest Stock Exchange
+    \item Google Trends search data for Romanian financial terms (crisis, volatility, recession, etc.)
+    \item Control variables: EUR/RON exchange rate, European market indices
+\end{itemize}
+
+\subsubsection{Step 2: Clean and Prepare Google Trends Data}
+
+\textbf{Problem:} Google Trends data has missing values and noise
+
+\textbf{Solution:} Apply preprocessing steps:
+\begin{enumerate}
+    \item Combine similar search terms using clustering
+    \item Smooth out random fluctuations
+    \item Remove long-term trends to focus on short-term changes
+\end{enumerate}
+
+\subsubsection{Step 3: Build Machine Learning Model}
+
+\textbf{Model:} XGBoost (gradient boosting algorithm)
+
+\textbf{Input features:}
+\begin{itemize}
+    \item Google Trends search volumes and their changes
+    \item Past volatility (lagged values)
+    \item Technical indicators (moving averages, RSI, etc.)
+\end{itemize}
+
+\textbf{Output:} Predict if tomorrow will have high volatility (yes/no classification)
+
+\textbf{Baseline comparison:} GARCH model (traditional econometric approach)
+
+\subsubsection{Step 4: Train and Test the Model}
+
+\textbf{Training period:} 2010-2019
+
+\textbf{Validation period:} 2020-2022 (includes COVID-19 crisis)
+
+\textbf{Test period:} 2023-2024 (final out-of-sample evaluation)
+
+\textbf{Performance metrics:} ROC AUC, Precision, Recall
+
+\subsubsection{Step 5: Check Robustness}
+
+Test if results hold under different conditions:
+\begin{itemize}
+    \item Different sets of search keywords
+    \item Calm periods vs. crisis periods
+    \item Different forecast horizons (1-day, 1-week ahead)
+\end{itemize}
+
+\subsection{Original Approach and Experiments}
+
+\subsubsection{What Makes This Research Original?}
+
+\begin{enumerate}
+    \item \textbf{First Study on Romanian Market Using Google Trends + Machine Learning}
+    \begin{itemize}
+        \item No previous research has combined these methods for Romanian BET index
+        \item Most studies focus on U.S. or Asian markets, not Central/Eastern Europe
+        \item We use Romanian-language search terms (not English)
+    \end{itemize}
+    
+    \item \textbf{Advanced Preprocessing for Low-Volume Data}
+    \begin{itemize}
+        \item Emerging markets have fewer Google searches than U.S.
+        \item We apply clustering and denoising techniques to handle sparse data
+        \item This makes the method applicable to other small markets
+    \end{itemize}
+    
+    \item \textbf{XGBoost vs. Traditional Models}
+    \begin{itemize}
+        \item Direct comparison: XGBoost with Google Trends vs. GARCH model
+        \item We measure both statistical accuracy and economic value
+        \item Tests if complex ML is worth the extra effort
+    \end{itemize}
+\end{enumerate}
+
+\subsubsection{Machine Learning Experiments to Conduct}
+
+\textbf{Experiment 1: Model Architecture Comparison}
+\begin{itemize}
+    \item Train three models on identical datasets: (A) XGBoost, (B) LSTM, (C) GARCH baseline
+    \item Compare ROC AUC, F1-score, training time, and inference speed
+    \item Measure memory footprint and computational complexity
+    \item Expected result: XGBoost achieves 5-10\% higher ROC AUC than LSTM with 3-5x faster training
+\end{itemize}
+
+\textbf{Experiment 2: Preprocessing Pipeline Ablation Study}
+\begin{itemize}
+    \item Test XGBoost with: (A) Raw Google Trends, (B) + Clustering, (C) + Clustering + Denoising, (D) Full pipeline
+    \item Quantify accuracy improvement at each preprocessing step
+    \item Measure signal-to-noise ratio (SNR) improvement
+    \item Expected result: Full pipeline reduces RMSE by 30-40\% vs. raw data
+\end{itemize}
+
+\textbf{Experiment 3: Feature Importance and SHAP Analysis}
+\begin{itemize}
+    \item Extract SHAP values for all 80-120 features
+    \item Rank features by contribution to model predictions
+    \item Compare Google Trends vs. technical indicators vs. lagged volatility
+    \item Test stability of feature rankings across different time periods
+    \item Expected result: Top 10 features include 3-5 Google Trends variables
+\end{itemize}
+
+\textbf{Experiment 4: Hyperparameter Sensitivity Analysis}
+\begin{itemize}
+    \item Grid search over n\_estimators, learning\_rate, max\_depth, subsample
+    \item Evaluate performance surface and identify optimal configuration
+    \item Test if optimal hyperparameters from 2010-2019 work well on 2020-2024
+    \item Expected result: Performance degradation <10\% when transferring hyperparameters across regimes
+\end{itemize}
+
+\subsection{Original Contribution}
+
+\subsubsection{Research Questions This Work Will Answer}
+
+\begin{enumerate}
+    \item \textbf{XGBoost vs. Deep Learning Performance:} Does gradient boosting (XGBoost) outperform LSTM neural networks for time series classification on sparse emerging market data? What are the accuracy-complexity tradeoffs?
+    
+    \item \textbf{Preprocessing Impact on ML Models:} How much does statistical preprocessing (clustering, denoising, detrending) improve machine learning model performance? Can it reduce prediction errors by 20-50\%?
+    
+    \item \textbf{Feature Engineering for Behavioral Data:} Which feature extraction methods (ROC, momentum, technical indicators) are most effective for Google Trends data? How do SHAP values rank behavioral vs. price-based features?
+    
+    \item \textbf{Model Robustness and Generalization:} How stable is XGBoost performance across different data regimes (high/low volatility)? Does hyperparameter optimization transfer across time periods?
+\end{enumerate}
+
+\subsubsection{Technical Contributions to Machine Learning Research}
+
+\textbf{1. Ensemble Learning for Sparse Data:}
+\begin{itemize}
+    \item Demonstrates XGBoost superiority over LSTM for low-volume behavioral signals
+    \item Quantifies performance-complexity tradeoffs: gradient boosting vs. neural networks
+    \item Provides benchmark results for emerging market ML applications
+\end{itemize}
+
+\textbf{2. Preprocessing Pipeline Innovation:}
+\begin{itemize}
+    \item Novel combination: hierarchical clustering + smoothing splines + detrending
+    \item Systematic evaluation of each preprocessing step's impact on model accuracy
+    \item Replicable Python implementation for handling sparse time series data
+\end{itemize}
+
+\textbf{3. Explainable AI (XAI) Application:}
+\begin{itemize}
+    \item SHAP value analysis for financial feature importance interpretation
+    \item Comparative feature engineering: behavioral vs. technical vs. fundamental features
+    \item Bridges black-box ML with domain-expert interpretability needs
+\end{itemize}
+
+\textbf{4. Hyperparameter Optimization Strategy:}
+\begin{itemize}
+    \item Grid search methodology tailored for imbalanced binary classification (volatility spikes)
+    \item Cross-validation approach for time series with regime shifts
+    \item Transfer learning insights: do optimal parameters generalize across market conditions?
+\end{itemize}
+
+\subsection{Timeline}
+
+\textbf{Research Duration:} 6-8 Weeks
+
+\begin{enumerate}
+    \item Weeks 1-2: Collect BET data and Google Trends data
+    \item Week 3: Clean and preprocess Google Trends (handle missing values)
+    \item Weeks 4-5: Build and train XGBoost model, compare with GARCH baseline
+    \item Week 6: Test model on out-of-sample data (2023-2024)
+    \item Weeks 7-8: Run robustness checks and write final report
+\end{enumerate}
+
+\newpage
+\section{Extended Bibliography (15 Key Sources)}
+
+This section presents 15 essential bibliographic references covering XGBoost applications, Google Trends methodologies, financial volatility forecasting, emerging market studies, and behavioral finance foundations.
+
+\bibliographystyle{apalike}
+\begin{thebibliography}{99}
+
+\bibitem{deep2025}
+Deep, G., Deep, A., Rachev, S.T., and Fabozzi, F.J. (2025).
+\textit{Google Trends–Augmented XGBoost for Market Volatility Prediction: A Machine–Learning Early-Warning System}.
+Preprint, Texas Tech University.
+DOI: 10.2139/ssrn.5318019.
+
+\bibitem{petropoulos2021}
+Petropoulos, A., Siakoulis, V., Stavroulakis, E., Lazaris, P., and Vlachogiannakis, N. (2021).
+\textit{Employing Google Trends and Deep Learning in Forecasting Financial Market Turbulence}.
+Journal of Behavioral Finance, 23(3), 353-365.
+DOI: 10.1080/15427560.2021.1913160.
+
+\bibitem{djorno2025}
+Djorno, C., Santillana, M., and Yang, S. (2025).
+\textit{Restoring the Forecasting Power of Google Trends with Statistical Preprocessing}.
+arXiv preprint arXiv:2504.07032v1 [stat.AP].
+
+\bibitem{tanrikulu2024}
+Tanrikulu, H.M. and Pabuccu, H. (2024).
+\textit{The Effect of Data Types on the Performance of Machine Learning Algorithms for Financial Prediction}.
+Preprint, March 28, 2024.
+
+\bibitem{hamid2017}
+Hamid, A. and Heiden, M. (2017).
+\textit{Forecasting Volatility with Empirical Similarity and Google Trends}.
+Journal of Economic Behavior \& Organization, 117, 62-81.
+DOI: 10.1016/j.jebo.2015.06.005.
+
+\bibitem{chen2016}
+Chen, T. and Guestrin, C. (2016).
+\textit{XGBoost: A Scalable Tree Boosting System}.
+Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, 785-794.
+DOI: 10.1145/2939672.2939785.
+
+\bibitem{bollerslev1986}
+Bollerslev, T. (1986).
+\textit{Generalized Autoregressive Conditional Heteroskedasticity}.
+Journal of Econometrics, 31(3), 307-327.
+DOI: 10.1016/0304-4076(86)90063-1.
+
+\bibitem{barber2008}
+Barber, B.M. and Odean, T. (2008).
+\textit{All That Glitters: The Effect of Attention and News on the Buying Behavior of Individual and Institutional Investors}.
+Review of Financial Studies, 21(2), 785-818.
+DOI: 10.1093/rfs/hhm079.
+
+\bibitem{hochreiter1997}
+Hochreiter, S. and Schmidhuber, J. (1997).
+\textit{Long Short-Term Memory}.
+Neural Computation, 9(8), 1735-1780.
+DOI: 10.1162/neco.1997.9.8.1735.
+
+\bibitem{bekaert2013}
+Bekaert, G. and Harvey, C.R. (2013).
+\textit{Emerging Markets Finance}.
+Journal of Empirical Finance, 20, 1-9.
+DOI: 10.1016/j.jempfin.2012.08.001.
+
+\bibitem{preis2013}
+Preis, T., Moat, H.S., and Stanley, H.E. (2013).
+\textit{Quantifying Trading Behavior in Financial Markets Using Google Trends}.
+Scientific Reports, 3, Article 1684.
+DOI: 10.1038/srep01684.
+
+\bibitem{lundberg2017}
+Lundberg, S.M. and Lee, S.I. (2017).
+\textit{A Unified Approach to Interpreting Model Predictions}.
+Advances in Neural Information Processing Systems 30 (NIPS 2017), 4765-4774.
+
+\bibitem{hansen2005}
+Hansen, P.R. and Lunde, A. (2005).
+\textit{A Forecast Comparison of Volatility Models: Does Anything Beat a GARCH(1,1)?}
+Journal of Applied Econometrics, 20(7), 873-889.
+DOI: 10.1002/jae.800.
+
+\bibitem{da2011}
+Da, Z., Engelberg, J., and Gao, P. (2011).
+\textit{In Search of Attention}.
+Journal of Finance, 66(5), 1461-1499.
+DOI: 10.1111/j.1540-6261.2011.01679.x.
+
+\bibitem{corsi2009}
+Corsi, F. (2009).
+\textit{A Simple Approximate Long-Memory Model of Realized Volatility}.
+Journal of Financial Econometrics, 7(2), 174-196.
+DOI: 10.1093/jjfinec/nbp001.
+
+\end{thebibliography}
+
+\end{document}
