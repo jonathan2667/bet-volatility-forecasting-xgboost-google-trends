@@ -538,6 +538,366 @@ Test if results hold under different conditions:
 \end{enumerate}
 
 \newpage
+\section{Lab 5-8 - Experimental Modeling Framework}
+
+\subsection{Overview}
+
+This section describes the machine learning experiments for BET volatility prediction. We focus on XGBoost implementation, data preprocessing, model comparison, and validation methodology.
+
+\subsection{Problem Formulation}
+
+\subsubsection{Input-Output Specification}
+
+\textbf{Input:} Feature vector $\mathbf{x}_t \in \mathbb{R}^{80}$ at day $t$
+
+\textbf{Output:} Binary label $y_{t+1} \in \{0, 1\}$ indicating high volatility next day
+
+\textbf{Definition of high volatility:}
+\begin{equation}
+y_{t+1} = \begin{cases}
+1 & \text{if volatility}_{t+1} > \text{75th percentile} \\
+0 & \text{otherwise}
+\end{cases}
+\end{equation}
+
+This is a \textbf{binary classification problem} for time series data.
+
+\subsection{Dataset Specification}
+
+\subsubsection{Data Sources and Size}
+
+\begin{enumerate}
+    \item \textbf{BET Index:} 3,758 daily observations (2010-2025)
+    \begin{itemize}
+        \item Training: 2,512 days (2010-2019)
+        \item Validation: 755 days (2020-2022)
+        \item Test: 491 days (2023-2024)
+    \end{itemize}
+    
+    \item \textbf{Google Trends:} 20 Romanian queries, weekly data
+    \begin{itemize}
+        \item Examples: ``criză financiară'', ``bursă'', ``volatilitate''
+        \item Challenge: 65-80\% missing values due to low search volume
+    \end{itemize}
+    
+    \item \textbf{Control Features:} EUR/RON, VIX, STOXX 50
+\end{enumerate}
+
+\subsubsection{Feature Engineering}
+
+Total 80 features organized in 3 blocks:
+
+\textbf{Block 1 - Google Trends (40 features):}
+\begin{itemize}
+    \item Raw search volumes for 20 queries
+    \item Rate of change (5-day): $\text{ROC} = (G_t - G_{t-5}) / G_{t-5}$
+\end{itemize}
+
+\textbf{Block 2 - Technical indicators (30 features):}
+\begin{itemize}
+    \item Lagged volatilities: $\sigma_{t-1}^2, \ldots, \sigma_{t-10}^2$
+    \item Moving averages: MA(5), MA(10), MA(20), MA(50)
+    \item RSI, momentum, volatility of volatility
+\end{itemize}
+
+\textbf{Block 3 - Controls (10 features):}
+\begin{itemize}
+    \item Exchange rates, European indices, day-of-week dummies
+\end{itemize}
+
+\subsection{Data Preprocessing Pipeline}
+
+\textbf{Problem:} Google Trends has missing values, noise, and trends
+
+\textbf{Solution:} 3-step preprocessing (from Djorno et al., 2025):
+
+\begin{enumerate}
+    \item \textbf{Clustering:} Group correlated queries using hierarchical clustering
+    \begin{equation}
+    d_{ij} = 1 - |\text{corr}(G^{(i)}, G^{(j)})|
+    \end{equation}
+    Aggregate clusters by averaging
+    
+    \item \textbf{Denoising:} Apply smoothing splines
+    \begin{equation}
+    \hat{G} = \arg\min_g \left[ \sum (G_t - g_t)^2 + \lambda \int (g'')^2 \right]
+    \end{equation}
+    with $\lambda = 0.05$
+    
+    \item \textbf{Detrending:} Remove long-term trends using first differencing
+    \begin{equation}
+    G_t^* = \hat{G}_t - \hat{G}_{t-1}
+    \end{equation}
+\end{enumerate}
+
+\textbf{Expected improvement:} Missing values from 75\% to $<$40\%
+
+\subsection{XGBoost Model Specification}
+
+\subsubsection{Model Architecture}
+
+XGBoost builds an ensemble of $K$ decision trees:
+
+\begin{equation}
+\hat{y} = \sum_{k=1}^{K} f_k(\mathbf{x})
+\end{equation}
+
+where each $f_k$ is a regression tree added sequentially to minimize loss.
+
+\subsubsection{Loss Function}
+
+Binary cross-entropy for classification:
+
+\begin{equation}
+\mathcal{L} = \sum_{i=1}^{n} \left[ -y_i \log(p_i) - (1-y_i)\log(1-p_i) \right] + \sum_{k=1}^{K} \Omega(f_k)
+\end{equation}
+
+where $p_i = \sigma(\hat{y}_i)$ is predicted probability and $\Omega(f_k) = \gamma T + \frac{1}{2}\lambda\|w\|^2$ is regularization.
+
+\subsubsection{Hyperparameter Tuning}
+
+Grid search over:
+\begin{itemize}
+    \item Number of trees: $K \in \{50, 100, 200, 300\}$
+    \item Learning rate: $\eta \in \{0.01, 0.05, 0.1\}$
+    \item Max depth: $d \in \{3, 5, 7\}$
+    \item Subsample: $\rho \in \{0.7, 0.8, 1.0\}$
+\end{itemize}
+
+Total: $4 \times 3 \times 3 \times 3 = 108$ configurations
+
+Use 5-fold time series cross-validation on training set to select best hyperparameters.
+
+\subsection{Baseline Models for Comparison}
+
+To prove XGBoost adds value, we compare against 5 baselines:
+
+\begin{enumerate}
+    \item \textbf{GARCH(1,1):} Traditional volatility model
+    \begin{equation}
+    \sigma_t^2 = \omega + \alpha r_{t-1}^2 + \beta \sigma_{t-1}^2
+    \end{equation}
+    
+    \item \textbf{Logistic Regression:} Linear baseline with same features
+    
+    \item \textbf{Random Forest:} 200 trees, max depth 10
+    
+    \item \textbf{LSTM:} 2-layer neural network
+    \begin{itemize}
+        \item Layer 1: 64 LSTM units + dropout(0.2)
+        \item Layer 2: 32 LSTM units + dropout(0.2)
+        \item Output: Dense(1, sigmoid)
+        \item Lookback window: 10 days
+    \end{itemize}
+    
+    \item \textbf{Naive Baseline:} Predict high volatility if yesterday was high volatility
+\end{enumerate}
+
+\subsection{Evaluation Metrics}
+
+\subsubsection{Primary Metric: ROC AUC}
+
+ROC curve plots True Positive Rate vs False Positive Rate:
+
+\begin{equation}
+\text{TPR} = \frac{\text{TP}}{\text{TP} + \text{FN}}, \quad \text{FPR} = \frac{\text{FP}}{\text{FP} + \text{TN}}
+\end{equation}
+
+\textbf{AUC interpretation:}
+\begin{itemize}
+    \item 0.5 = random guessing
+    \item 0.7 = acceptable
+    \item 0.8 = good
+    \item 0.9 = excellent
+\end{itemize}
+
+\subsubsection{Secondary Metrics}
+
+\begin{itemize}
+    \item \textbf{Precision:} $\frac{\text{TP}}{\text{TP} + \text{FP}}$ (how many predicted spikes were real?)
+    \item \textbf{Recall:} $\frac{\text{TP}}{\text{TP} + \text{FN}}$ (how many real spikes did we catch?)
+    \item \textbf{F1-Score:} $2 \cdot \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$
+\end{itemize}
+
+\subsection{Experimental Design}
+
+\subsubsection{Experiment 1: Preprocessing Ablation}
+
+\textbf{Goal:} Measure impact of each preprocessing step
+
+\textbf{Setup:} Train XGBoost on 4 datasets:
+\begin{enumerate}
+    \item Raw Google Trends (no preprocessing)
+    \item + Clustering
+    \item + Clustering + Denoising
+    \item + Clustering + Denoising + Detrending (full pipeline)
+\end{enumerate}
+
+\textbf{Expected result:} AUC improves by 0.05-0.10 from raw to full pipeline
+
+\subsubsection{Experiment 2: Model Comparison}
+
+\textbf{Goal:} Show XGBoost outperforms baselines
+
+\textbf{Setup:} Train all 6 models (XGBoost + 5 baselines) on same data
+
+\textbf{Compare:}
+\begin{itemize}
+    \item Test set AUC (primary)
+    \item Training time (efficiency)
+    \item Precision at 80\% recall (practical threshold)
+\end{itemize}
+
+\textbf{Success criteria:} XGBoost AUC $\geq$ 0.75 and beats GARCH by $\geq$ 0.05
+
+\subsubsection{Experiment 3: Feature Importance (SHAP)}
+
+\textbf{Goal:} Understand which features matter
+
+\textbf{Method:} Compute SHAP values for each feature
+
+\begin{equation}
+\text{SHAP}_j = \frac{1}{N}\sum_{i=1}^{N} |\phi_j^{(i)}|
+\end{equation}
+
+where $\phi_j^{(i)}$ is Shapley value of feature $j$ for sample $i$.
+
+\textbf{Questions:}
+\begin{itemize}
+    \item Do Google Trends features rank in top 15?
+    \item Which queries are most predictive?
+    \item Are behavioral features stable over time?
+\end{itemize}
+
+\subsubsection{Experiment 4: Incremental Value Test}
+
+\textbf{Goal:} Prove Google Trends adds value beyond technical indicators
+
+\textbf{Setup:} Compare two XGBoost models:
+\begin{itemize}
+    \item $M_{\text{base}}$: Only technical + control features (40 features)
+    \item $M_{\text{full}}$: All features including Google Trends (80 features)
+\end{itemize}
+
+\textbf{Metric:} $\Delta\text{AUC} = \text{AUC}(M_{\text{full}}) - \text{AUC}(M_{\text{base}})$
+
+\textbf{Success:} $\Delta\text{AUC} > 0.03$ (statistically significant improvement)
+
+\subsection{Validation Strategy}
+
+\subsubsection{Time Series Cross-Validation}
+
+Cannot use random splitting due to temporal dependence. Use \textbf{expanding window}:
+
+\begin{verbatim}
+Train: 2010-2016 → Validate: 2017
+Train: 2010-2017 → Validate: 2018
+Train: 2010-2018 → Validate: 2019
+...
+Train: 2010-2021 → Validate: 2022
+\end{verbatim}
+
+This gives 6 validation folds for hyperparameter tuning.
+
+\textbf{Final test:} Completely held-out 2023-2024 data (never seen during training/validation)
+
+\subsubsection{Preventing Data Leakage}
+
+\textbf{Critical:} All preprocessing parameters computed on training data only:
+\begin{itemize}
+    \item Clustering structure learned from training period
+    \item Smoothing parameters fit on training period
+    \item Feature normalization: $\mu$, $\sigma$ from training only
+\end{itemize}
+
+Validation and test sets are transformed using training parameters.
+
+\subsection{Comparison with Literature}
+
+We benchmark against published results:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lllll}
+\hline
+\textbf{Study} & \textbf{Market} & \textbf{Model} & \textbf{AUC} & \textbf{Year} \\
+\hline
+Deep et al. & VIX (US) & XGBoost + GT & 0.796 & 2025 \\
+Petropoulos et al. & European & LSTM + GT & 0.75-0.80 & 2021 \\
+Hamid \& Heiden & S\&P 500 & Similarity & 0.72 & 2017 \\
+\hline
+\textbf{This study} & \textbf{BET (Romania)} & \textbf{XGBoost + GT} & \textbf{?} & \textbf{2025} \\
+\hline
+\end{tabular}
+\caption{Benchmark comparison with existing literature}
+\end{table}
+
+\textbf{Challenge:} Romania is emerging market with lower search volumes than US/Europe
+
+\textbf{Target:} Match or exceed 0.75 AUC despite data sparsity
+
+\subsection{Implementation}
+
+\subsubsection{Software}
+
+\begin{itemize}
+    \item Python 3.10+
+    \item \texttt{xgboost} library (gradient boosting)
+    \item \texttt{tensorflow/keras} (LSTM baseline)
+    \item \texttt{shap} (explainability)
+    \item \texttt{scikit-learn} (metrics, preprocessing)
+    \item \texttt{pandas, numpy} (data manipulation)
+\end{itemize}
+
+\subsubsection{Code Structure}
+
+\begin{verbatim}
+src/
+├── data/
+│   ├── download_bet.py
+│   └── download_google_trends.py
+├── preprocessing/
+│   ├── clustering.py
+│   ├── smoothing.py
+│   └── detrending.py
+├── models/
+│   ├── xgboost_model.py
+│   ├── lstm_model.py
+│   └── baselines.py
+├── evaluation/
+│   ├── metrics.py
+│   └── shap_analysis.py
+└── run_experiments.py
+\end{verbatim}
+
+\subsubsection{Computational Requirements}
+
+\begin{itemize}
+    \item Hardware: Standard laptop (8GB RAM, 4-core CPU)
+    \item XGBoost training: $\sim$2 hours
+    \item LSTM training: $\sim$4 hours (or 30 min with GPU)
+    \item Total storage: $<$1 GB
+\end{itemize}
+
+\subsection{Expected Contributions}
+
+This experimental framework will demonstrate:
+
+\begin{enumerate}
+    \item \textbf{Preprocessing effectiveness:} Quantify improvement from handling sparse Google Trends data
+    
+    \item \textbf{XGBoost superiority:} Show gradient boosting outperforms deep learning (LSTM) for this task
+    
+    \item \textbf{Behavioral signal value:} Prove Google Trends adds predictive power beyond price data
+    
+    \item \textbf{Emerging market applicability:} First study applying these methods to Romanian market
+    
+    \item \textbf{Interpretability:} SHAP analysis makes ML predictions explainable
+\end{enumerate}
+
+\textbf{Novelty:} Combines advanced preprocessing + XGBoost + behavioral data for emerging market with rigorous validation methodology.
+
+\newpage
 \section{Extended Bibliography (15 Key Sources)}
 
 This section presents 15 essential bibliographic references covering XGBoost applications, Google Trends methodologies, financial volatility forecasting, emerging market studies, and behavioral finance foundations.
