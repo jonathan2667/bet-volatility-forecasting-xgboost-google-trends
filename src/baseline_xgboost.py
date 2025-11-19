@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 
 from data_loader import BETDataLoader
 from feature_engineering import FeatureEngineer
+from google_trends_loader import load_all_trends, expand_monthly_to_daily, create_trends_features, compute_trends_correlation
 
 
 class BaselineXGBoost:
@@ -159,22 +160,50 @@ def run_case_study():
     engineer = FeatureEngineer(df)
     df_features = engineer.add_all_features()
     
+    # Step 2.5: Load and integrate Google Trends data
+    print("\n[Step 2.5] Loading Google Trends behavioral data...")
+    trends_monthly = load_all_trends('../data')
+    
+    if trends_monthly is not None:
+        print("\n📊 Computing Google Trends Correlations...")
+        trends_corr = compute_trends_correlation(trends_monthly)
+        
+        # Expand monthly to daily and align with BET data
+        print("\n🔄 Expanding monthly trends to daily frequency...")
+        trends_daily = expand_monthly_to_daily(trends_monthly, df_features.index)
+        
+        # Create behavioral features from trends
+        print("\n🔧 Creating Google Trends features...")
+        trends_features = create_trends_features(trends_daily)
+        
+        # Merge with BET data
+        print("\n🔗 Merging Google Trends with BET data...")
+        df_features = df_features.join(trends_features, how='left')
+        df_features.fillna(method='ffill', inplace=True)
+        df_features.fillna(0, inplace=True)
+        print(f"✓ Total features after merge: {len(df_features.columns)}")
+        print(f"✓ Feature columns: Technical (12) + Google Trends ({len(trends_features.columns)})")
+    else:
+        print("⚠️  No Google Trends data found. Continuing with technical indicators only.")
+    
+    # Update loader's dataframe with merged features
+    loader.df = df_features
+    
     # Step 3: Split data
     print("\n[Step 3] Splitting data...")
     train_df, val_df, test_df = loader.split_data()
     
-    # Re-apply feature engineering to each split
-    train_eng = FeatureEngineer(train_df).add_all_features()
-    val_eng = FeatureEngineer(val_df).add_all_features()
-    test_eng = FeatureEngineer(test_df).add_all_features()
+    print(f"✓ Train: {len(train_df)} samples, {len(train_df.columns)} features")
+    print(f"✓ Val:   {len(val_df)} samples, {len(val_df.columns)} features")
+    print(f"✓ Test:  {len(test_df)} samples, {len(test_df.columns)} features")
     
     # Step 4: Prepare data for ML
     print("\n[Step 4] Preparing data for ML...")
     model = BaselineXGBoost(n_estimators=100, max_depth=5, learning_rate=0.1)
     
-    X_train, y_train = model.prepare_data(train_eng)
-    X_val, y_val = model.prepare_data(val_eng)
-    X_test, y_test = model.prepare_data(test_eng)
+    X_train, y_train = model.prepare_data(train_df)
+    X_val, y_val = model.prepare_data(val_df)
+    X_test, y_test = model.prepare_data(test_df)
     
     # Step 5: Train model
     print("\n[Step 5] Training model...")
