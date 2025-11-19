@@ -30,7 +30,7 @@ class BaselineXGBoost:
         """Prepare X and y from dataframe"""
         # Exclude target and intermediate columns
         exclude_cols = [target_col, 'returns', 'volatility', 'Close', 'Price', 
-                       'Open', 'High', 'Low', 'Volume', 'Adj Close']
+                       'Open', 'High', 'Low', 'Volume', 'Adj Close', 'Vol.', 'Change %']
         
         feature_cols = [col for col in df.columns if col not in exclude_cols]
         
@@ -88,6 +88,8 @@ class BaselineXGBoost:
     
     def plot_feature_importance(self, top_n=15):
         """Plot top N most important features"""
+        from pathlib import Path
+        
         importance = self.model.feature_importances_
         
         # Create dataframe for plotting
@@ -96,14 +98,18 @@ class BaselineXGBoost:
             'importance': importance
         }).sort_values('importance', ascending=False).head(top_n)
         
+        # Create results directory if it doesn't exist
+        results_dir = Path('../results')
+        results_dir.mkdir(exist_ok=True)
+        
         plt.figure(figsize=(10, 6))
         plt.barh(importance_df['feature'], importance_df['importance'])
         plt.xlabel('Importance')
         plt.title(f'Top {top_n} Feature Importances - XGBoost')
         plt.gca().invert_yaxis()
         plt.tight_layout()
-        plt.savefig('../results/feature_importance.png', dpi=150, bbox_inches='tight')
-        print(f"\nFeature importance plot saved to ../results/feature_importance.png")
+        plt.savefig(results_dir / 'feature_importance.png', dpi=150, bbox_inches='tight')
+        print(f"\nFeature importance plot saved to {results_dir}/feature_importance.png")
         plt.close()
         
         return importance_df

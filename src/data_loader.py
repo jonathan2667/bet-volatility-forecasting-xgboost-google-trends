@@ -24,18 +24,44 @@ class BETDataLoader:
             self.df['Date'] = pd.to_datetime(self.df['Date'])
             self.df.set_index('Date', inplace=True)
         
+        # Clean numeric columns (remove commas and convert to float)
+        numeric_cols = ['Price', 'Open', 'High', 'Low']
+        for col in numeric_cols:
+            if col in self.df.columns:
+                # Remove commas and convert to numeric
+                self.df[col] = pd.to_numeric(
+                    self.df[col].astype(str).str.replace(',', ''), 
+                    errors='coerce'
+                )
+        
+        # Clean Change % column
+        if 'Change %' in self.df.columns:
+            self.df['Change %'] = pd.to_numeric(
+                self.df['Change %'].astype(str).str.replace('%', ''), 
+                errors='coerce'
+            )
+        
+        # Sort by date (oldest first)
+        self.df.sort_index(inplace=True)
+        
         print(f"Loaded {len(self.df)} observations")
         print(f"Date range: {self.df.index.min()} to {self.df.index.max()}")
         return self.df
     
     def compute_returns(self):
         """Compute log returns"""
-        if 'Close' in self.df.columns:
-            self.df['returns'] = np.log(self.df['Close'] / self.df['Close'].shift(1))
-        elif 'Price' in self.df.columns:
-            self.df['returns'] = np.log(self.df['Price'] / self.df['Price'].shift(1))
+        # Use Price column (BET CSV format)
+        if 'Price' in self.df.columns:
+            price_col = 'Price'
+        elif 'Close' in self.df.columns:
+            price_col = 'Close'
         else:
-            raise ValueError("No price column found (expected 'Close' or 'Price')")
+            raise ValueError("No price column found (expected 'Price' or 'Close')")
+        
+        self.df['returns'] = np.log(self.df[price_col] / self.df[price_col].shift(1))
+        
+        # Remove inf and -inf values
+        self.df['returns'].replace([np.inf, -np.inf], np.nan, inplace=True)
         
         print(f"Computed returns. Mean: {self.df['returns'].mean():.6f}, Std: {self.df['returns'].std():.6f}")
         return self.df

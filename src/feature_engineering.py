@@ -22,7 +22,8 @@ class FeatureEngineer:
     
     def add_moving_averages(self, windows=[5, 10, 20, 50]):
         """Add moving average features"""
-        price_col = 'Close' if 'Close' in self.df.columns else 'Price'
+        # Use Price column (BET CSV format)
+        price_col = 'Price' if 'Price' in self.df.columns else 'Close'
         
         for window in windows:
             self.df[f'ma_{window}'] = self.df[price_col].rolling(window=window).mean()
@@ -32,7 +33,8 @@ class FeatureEngineer:
     
     def add_momentum(self, window=10):
         """Add momentum indicator"""
-        price_col = 'Close' if 'Close' in self.df.columns else 'Price'
+        # Use Price column (BET CSV format)
+        price_col = 'Price' if 'Price' in self.df.columns else 'Close'
         self.df['momentum'] = self.df[price_col] - self.df[price_col].shift(window)
         
         print(f"Added momentum (window={window})")
