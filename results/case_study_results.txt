@@ -1,0 +1,83 @@
+BET VOLATILITY PREDICTION - CASE STUDY RESULTS
+==============================================
+Date: November 18, 2025
+Model: XGBoost Baseline (100 trees, depth=5, lr=0.1)
+
+DATASET
+-------
+Total observations: 3,533 (after feature engineering)
+- Training: 2,236 days (2010-2019)
+- Validation: 702 days (2020-2022)
+- Test: 497 days (2023-2024)
+
+Features: 12 technical indicators
+- 5 lagged volatilities
+- 4 moving averages
+- RSI, momentum, volatility of volatility
+
+Target: Binary classification (75th percentile threshold)
+- Positive class (high vol): ~25%
+
+PERFORMANCE METRICS
+-------------------
+Training Set:
+  ROC AUC: 0.9765
+  Precision: 0.99 (high vol)
+  Recall: 0.59 (high vol)
+  F1-Score: 0.74 (high vol)
+
+Validation Set:
+  ROC AUC: 0.6442
+  Precision: 0.55 (high vol)
+  Recall: 0.22 (high vol)
+  F1-Score: 0.32 (high vol)
+
+Test Set:
+  ROC AUC: 0.6811
+  Precision: 0.46 (high vol)
+  Recall: 0.12 (high vol)
+  F1-Score: 0.18 (high vol)
+
+FEATURE IMPORTANCE (Top 10)
+----------------------------
+1. vov (volatility of volatility): 0.1796
+2. momentum: 0.0985
+3. rsi: 0.0814
+4. ma_20: 0.0755
+5. ma_10: 0.0743
+6. vol_lag_20: 0.0742
+7. ma_5: 0.0737
+8. ma_50: 0.0726
+9. vol_lag_10: 0.0687
+10. vol_lag_5: 0.0680
+
+INTERPRETATION
+--------------
+✅ Strengths:
+- Model successfully learns patterns (training AUC 0.98)
+- Test AUC 0.68 is reasonable baseline without Google Trends
+- VoV (volatility of volatility) emerges as top predictor
+- Good precision on low volatility detection (0.80)
+
+⚠️ Limitations:
+- Overfitting observed (training 0.98 vs test 0.68)
+- Poor recall on high volatility spikes (only 12% detected)
+- Class imbalance challenges (25% positive class)
+- No behavioral features (Google Trends) yet included
+
+NEXT STEPS
+----------
+1. Add Google Trends features (expected +0.05-0.10 AUC improvement)
+2. Implement preprocessing pipeline (clustering, denoising)
+3. Hyperparameter tuning via grid search
+4. Compare with GARCH and LSTM baselines
+5. SHAP analysis for feature explanations
+6. Address class imbalance (SMOTE, class weights)
+
+CONCLUSION
+----------
+The baseline XGBoost model demonstrates feasibility of the
+approach, achieving test AUC 0.68 with only technical indicators.
+This establishes a reference point for measuring the incremental
+value of Google Trends behavioral features in the full study.
+
