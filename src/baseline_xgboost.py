@@ -63,6 +63,8 @@ class BaselineXGBoost:
     
     def evaluate(self, X, y, dataset_name="Test"):
         """Evaluate model performance"""
+        from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+        
         print(f"\n=== {dataset_name} Set Evaluation ===")
         
         # Predictions
@@ -70,8 +72,17 @@ class BaselineXGBoost:
         y_pred_proba = self.model.predict_proba(X)[:, 1]
         
         # Metrics
-        auc = roc_auc_score(y, y_pred_proba)
-        print(f"ROC AUC: {auc:.4f}")
+        auc_score = roc_auc_score(y, y_pred_proba)
+        precision = precision_score(y, y_pred, pos_label=1, zero_division=0)
+        recall = recall_score(y, y_pred, pos_label=1, zero_division=0)
+        f1 = f1_score(y, y_pred, pos_label=1, zero_division=0)
+        accuracy = accuracy_score(y, y_pred)
+        
+        print(f"ROC AUC: {auc_score:.4f}")
+        print(f"Precision: {precision:.4f}")
+        print(f"Recall: {recall:.4f}")
+        print(f"F1-Score: {f1:.4f}")
+        print(f"Accuracy: {accuracy:.4f}")
         
         print("\nClassification Report:")
         print(classification_report(y, y_pred, target_names=['Low Vol', 'High Vol']))
@@ -80,10 +91,22 @@ class BaselineXGBoost:
         cm = confusion_matrix(y, y_pred)
         print(cm)
         
+        # Extract confusion matrix values
+        tn, fp, fn, tp = cm.ravel()
+        
         return {
-            'auc': auc,
+            'auc': auc_score,
+            'precision': precision,
+            'recall': recall,
+            'f1': f1,
+            'accuracy': accuracy,
             'predictions': y_pred,
-            'probabilities': y_pred_proba
+            'probabilities': y_pred_proba,
+            'y_true': y,
+            'tn': int(tn),
+            'fp': int(fp),
+            'fn': int(fn),
+            'tp': int(tp)
         }
     
     def plot_feature_importance(self, top_n=15):
@@ -169,6 +192,15 @@ def run_case_study():
     print("\nTop 10 Features:")
     print(importance_df.head(10))
     
+    # Step 8: Generate comprehensive visualizations
+    print("\n[Step 8] Creating comprehensive visualizations...")
+    from visualizations import CaseStudyVisualizer
+    
+    visualizer = CaseStudyVisualizer()
+    results_table = visualizer.generate_all_visualizations(
+        train_results, val_results, test_results, df=df_features
+    )
+    
     # Summary
     print("\n" + "=" * 60)
     print("CASE STUDY RESULTS SUMMARY")
@@ -178,12 +210,26 @@ def run_case_study():
     print(f"Test AUC:       {test_results['auc']:.4f}")
     print("=" * 60)
     
+    print("\n" + "=" * 60)
+    print("GENERATED VISUALIZATIONS")
+    print("=" * 60)
+    print("✓ roc_curves.png - ROC curves for all datasets")
+    print("✓ confusion_matrices.png - Confusion matrix heatmaps")
+    print("✓ prediction_distributions.png - Probability distributions")
+    print("✓ metrics_comparison.png - Performance metrics bar chart")
+    print("✓ feature_correlation.png - Feature correlation heatmap")
+    print("✓ feature_importance.png - Top features importance")
+    print("✓ results_table.csv - Detailed metrics table")
+    print("✓ results_table.png - Results table visualization")
+    print("=" * 60)
+    
     return {
         'model': model,
         'train_results': train_results,
         'val_results': val_results,
         'test_results': test_results,
-        'importance': importance_df
+        'importance': importance_df,
+        'results_table': results_table
     }
 
 

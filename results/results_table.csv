@@ -1,0 +1,10 @@
+Metric,Training,Validation,Test
+ROC AUC,0.9765,0.6442,0.6811
+Precision (High Vol),0.9908,0.5542,0.4615
+Recall (High Vol),0.5905,0.2222,0.1154
+F1-Score (High Vol),0.7400,0.3172,0.1846
+Accuracy,0.8985,0.7179,0.7867
+True Negatives,1686,458,379
+False Positives,3,37,14
+False Negatives,224,161,92
+True Positives,323,46,12
